@@ -45,44 +45,44 @@ console.log(mergedArray);
 
 //SECOND EXERCISE
 
-class generateCode {
-    constructor(numberOfPins){
-        var pinlist = new Set([]);
-        
-        while (pinlist.size < numberOfPins){              //Repeat until we have required number of pins
+class codeGenerator {
+    constructor(numberOfPins = 0){
+        this.codelist = new Set([]);
+        while (this.codelist.size < numberOfPins){              //Repeat until we have required number of pins
             var code = this.generate();
-            if(!this.isIncremental(code) && !this.isConsecutiveDigits(code) && !pinlist.has(code)){
-                pinlist.add(code);
+            if(!this.isIncremental(code) && !this.isConsecutiveDigits(code)){
+                this.codelist.add(code);
             }
         }
-        return pinlist;
     }
     generate() {
-        var code = ( Math.floor(Math.random() * 9999) + 1).toString().split("");             //Generate 1 ~ 9999
-        if(code.length < 4){                                                                 //Add 0 if x / xx / xxx
-            var zeroRequired = 4 - code.length;
-            for(var i = 0 ; i < zeroRequired; i++){
-                code.unshift("0");
-            }
-        }
-        return code.join('');
+        var code = "";
+        var possible = "abcdef0123456789";
+
+        for (var i = 0; i < 4; i++)
+            code += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        return code;
     }
     isIncremental(code){
         for(var i = 0 ; i < code.length-2; i++ ){
-            if((parseInt(code[i+1]))==(parseInt(code[i])+1) && (parseInt(code[i+2]))==(parseInt(code[i+1])+1)){
+            if( (code[i+1] == this.incrementCharacter(code[i])) && (code[i+2] == this.incrementCharacter(code[i+1])) ) {
                 return true;
             } 
         }
         return false;
     }
     isConsecutiveDigits(code){
-        for(var i = 0 ; i < code.length-2; i++ ){
-            if( parseInt(code[i]) == parseInt(code[i+1]) ){
+        for(var i = 0 ; i < code.length-1; i++ ){
+            if( code[i] == code[i+1] ){
                 return true;
             }
         }
         return false;
     }
+    incrementCharacter(c){
+        return String.fromCharCode(c.charCodeAt(0) + 1 );
+    }
 }
 
-module.exports = generateCode;
+module.exports = codeGenerator;
