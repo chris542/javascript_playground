@@ -3,71 +3,86 @@
 var a = [1,1,3,5];
 var b = [1,2,3,4];
 
-for(var j = 0; j < b.length; j++){
-    for(var i = 0; i < a.length; i++){
-        if(b[j] <= a[i]){
-            a.splice(a.indexOf(a[i]),0, b[j] );
-            break;
-        }
+var fullLength = a.length + b.length;
+var aIndex = 0;
+var bIndex = 0;
+var mergedArray = [];
+
+for(var i = 0; i < fullLength; i++){
+    if(a[aIndex] < b[bIndex]){
+        //A is smaller push A
+        mergedArray.push(a[aIndex]);
+        aIndex++;
+    } else if(a[aIndex] > b[bIndex]){
+        //B is smaller push B
+        mergedArray.push(b[bIndex]);
+        bIndex++;
+    } else if (a[aIndex] == b[bIndex]){
+        //A and B are same. Push both
+        mergedArray.push(a[aIndex]);
+        mergedArray.push(b[bIndex]);
+        i++;
+        aIndex++;
+        bIndex++;
+    } else {
+        if(a[aIndex] == null){
+            //A has ended. Push left over of B
+            var chunk = b.slice(bIndex,b.length);
+            mergedArray = mergedArray.concat(chunk);
+            i+= chunk.length;
+            bIndex += chunk.length;
+        } else if(b[bIndex] == null){
+            //B has ended. Push left over of A
+            var chunk = a.slice(aIndex, a.length);
+            mergedArray = mergedArray.concat(chunk);
+            i+= chunk.length;
+            aIndex += chunk.length;
+        } 
     }
 }
-console.log(a);
-
+console.log(mergedArray);
             
 
 //SECOND EXERCISE
 
 class generateCode {
-    constructor(noOfPins){
-        this.numberOfPins = noOfPins;
-        this.pins = [];
-        for(var i = 0; i < this.numberOfPins; i++){
-            this.generate();
-            this.checkIncremental();
-            this.checkConsecutiveDigits();
-            this.checkUnique();
-            this.pins.push(this.newCode);
+    constructor(numberOfPins){
+        var pinlist = new Set([]);
+        
+        while (pinlist.size < numberOfPins){              //Repeat until we have required number of pins
+            var code = this.generate();
+            if(!this.isIncremental(code) && !this.isConsecutiveDigits(code) && !pinlist.has(code)){
+                pinlist.add(code);
+            }
         }
-        return this.pins;
+        return pinlist;
     }
     generate() {
-        this.newCode = Math.floor(1000 + Math.random() * 9000);
-    }
-    checkIncremental(){
-        var codeString = this.newCode.toString().split('');
-        for(var i = 0 ; i < 3; i++ ){
-            var actualNextNum = parseInt(codeString[i+1]);
-            var actualNextNextNum = parseInt(codeString[i+2]);
-            var expectedNextNum = parseInt(codeString[i])+1;
-            var expectedNextNextNum = parseInt(codeString[i+1])+1;
-            if(actualNextNum == expectedNextNum && actualNextNextNum == expectedNextNextNum ) {
-                //console.warn(this.newCode + ": INCREMENTAL PASSCODE! REGEN PASSCODE");
-                this.generate();
-                this.checkIncremental();
+        var code = ( Math.floor(Math.random() * 9999) + 1).toString().split("");             //Generate 1 ~ 9999
+        if(code.length < 4){                                                                 //Add 0 if x / xx / xxx
+            var zeroRequired = 4 - code.length;
+            for(var i = 0 ; i < zeroRequired; i++){
+                code.unshift("0");
             }
         }
+        return code.join('');
     }
-    checkConsecutiveDigits(){
-        var codeString = this.newCode.toString().split('');
-        for(var i = 0 ; i < 3; i++ ){
-            var actualNextNum = parseInt(codeString[i]);
-            var actualNextNextNum = parseInt(codeString[i+1]);
-            if(actualNextNum == actualNextNextNum ) {
-                //console.warn(this.newCode + ": CONSECUTIVE PASSCODE! REGEN PASSCODE");
-                this.generate();
-                this.checkConsecutiveDigits();
+    isIncremental(code){
+        for(var i = 0 ; i < code.length-2; i++ ){
+            if((parseInt(code[i+1]))==(parseInt(code[i])+1) && (parseInt(code[i+2]))==(parseInt(code[i+1])+1)){
+                return true;
+            } 
+        }
+        return false;
+    }
+    isConsecutiveDigits(code){
+        for(var i = 0 ; i < code.length-2; i++ ){
+            if( parseInt(code[i]) == parseInt(code[i+1]) ){
+                return true;
             }
         }
-    }
-    checkUnique(){
-        for(var i = 0; i < this.pins.length; i++){
-            if(this.newCode == this.pins[i]){
-                //console.warn(this.newCode + ": DUPLICATE PASSCODE! REGEN PASSCODE");
-                this.generate();
-                this.checkUnique();
-            }
-        }
+        return false;
     }
 }
 
-var passcode = new generateCode(1000);
+module.exports = generateCode;
