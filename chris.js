@@ -47,26 +47,36 @@ console.log(mergedArray);
 
 class codeGenerator {
     constructor(numberOfPins = 0){
-        this.codelist = new Set([]);
-        while (this.codelist.size < numberOfPins){              //Repeat until we have required number of pins
-            var code = this.generate();
-            if(!this.isIncremental(code) && !this.isConsecutiveDigits(code)){
-                this.codelist.add(code);
-            }
-        }
+        this.codelist = this.generate().slice(0,numberOfPins);
     }
     generate() {
-        var code = "";
-        var possible = "abcdef0123456789";
+        var self = this;
+        var codes= []
 
-        for (var i = 0; i < 4; i++)
-            code += possible.charAt(Math.floor(Math.random() * possible.length));
+        var chars = [];
+        for (let i = 0; i < 16; i++) 
+            chars.push(i);
 
-        return code;
+        (function loop(base, i){
+            for(var k=0; k< chars.length; k++) {
+                var c = base+chars[k];
+                if(i>1) {
+                    loop(c+",", i-1); 
+                } else { 
+                    var code = c.split(',').map((i)=>{return parseInt(i)}) //Convert to integers for test
+                    if(!self.isIncremental(code) && !self.isConsecutiveDigits(code)){
+                        code = code.map((i)=>{return i.toString(16) }).join(""); //Convert to hex value before inserting to the list
+                        codes.push(code); 
+                    }
+                }
+            }
+        })("", 4)
+
+        return this.shuffle(codes);
     }
     isIncremental(code){
         for(var i = 0 ; i < code.length-2; i++ ){
-            if( (code[i+1] == this.incrementCharacter(code[i])) && (code[i+2] == this.incrementCharacter(code[i+1])) ) {
+            if((code[i] + 1 == code[i+1]) && (code[i+1] + 1 == (code[i+2]))) {
                 return true;
             } 
         }
@@ -80,8 +90,16 @@ class codeGenerator {
         }
         return false;
     }
-    incrementCharacter(c){
-        return String.fromCharCode(c.charCodeAt(0) + 1 );
+    shuffle(arr){
+        var ctr = arr.length, temp, index;
+        while(ctr > 0 ){
+            index = Math.floor(Math.random() * ctr);
+            ctr--;
+            temp= arr[ctr];
+            arr[ctr] = arr[index];
+            arr[index]=temp;
+        }
+        return arr;
     }
 }
 
